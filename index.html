@@ -17,10 +17,12 @@ body{font-family:AppleMyungjo,'Apple SD Gothic Neo',serif;-webkit-tap-highlight-
 #st *{position:absolute}
 #bg,#lt{left:0;top:0;width:100%;height:100%}
 #lt{-webkit-mask-size:100% 100%}
-.t{-webkit-transform:translate(-50%,-50%);transform:translate(-50%,-50%);font-size:3em;font-weight:bold;white-space:nowrap;color:#1a4060;padding:.8em 1em;opacity:1;-webkit-transition:opacity 1s,color .6s,text-shadow .6s;transition:opacity 1s,color .6s,text-shadow .6s}
-.t.on{color:#0b2f52;text-shadow:0 0 .35em #fff,0 0 .9em rgba(255,255,255,.95),0 0 1.8em rgba(255,255,255,.75)}
+.t{-webkit-transform:translate(-50%,-50%);transform:translate(-50%,-50%);z-index:8;font-size:3em;font-weight:bold;white-space:nowrap;color:#1a4060;padding:.8em 1em;opacity:1;-webkit-transition:opacity 1s,color .6s,text-shadow .6s;transition:opacity 1s,color .6s,text-shadow .6s}
+.t.on{color:#123d59;-webkit-text-stroke:.35px rgba(242,252,255,.62);text-shadow:0 0 .08em rgba(255,255,255,.98),0 0 .24em rgba(225,249,255,.78),0 0 .55em rgba(225,249,255,.38);-webkit-animation:edgeGlow 3.2s ease-in-out infinite;animation:edgeGlow 3.2s ease-in-out infinite}
+@-webkit-keyframes edgeGlow{0%,100%{text-shadow:0 0 .06em rgba(255,255,255,.85),0 0 .18em rgba(225,249,255,.55),0 0 .42em rgba(225,249,255,.25)}50%{text-shadow:0 0 .1em rgba(255,255,255,1),0 0 .3em rgba(225,249,255,.9),0 0 .65em rgba(225,249,255,.42)}}
+@keyframes edgeGlow{0%,100%{text-shadow:0 0 .06em rgba(255,255,255,.85),0 0 .18em rgba(225,249,255,.55),0 0 .42em rgba(225,249,255,.25)}50%{text-shadow:0 0 .1em rgba(255,255,255,1),0 0 .3em rgba(225,249,255,.9),0 0 .65em rgba(225,249,255,.42)}}
 .a{-webkit-transform:translate(-50%,-50%);transform:translate(-50%,-50%);font-size:1.5em;font-weight:bold;white-space:nowrap;color:#1a4060;pointer-events:none;-webkit-transition:opacity 1s;transition:opacity 1s}
-#hd{width:24em;height:24em;margin:0;-webkit-transform:translate(-50%,-50%);transform:translate(-50%,-50%);border-radius:50%;z-index:5;
+#hd{width:12em;height:12em;margin:0;-webkit-transform:translate(-50%,-50%);transform:translate(-50%,-50%);border-radius:50%;z-index:5;
 background:-webkit-radial-gradient(circle,rgba(255,255,255,.98) 0,rgba(255,255,255,.75) 16%,rgba(255,255,255,.28) 38%,rgba(255,255,255,0) 68%);
 background:radial-gradient(circle,rgba(255,255,255,.98) 0,rgba(255,255,255,.75) 16%,rgba(255,255,255,.28) 38%,rgba(255,255,255,0) 68%)}
 #hd.breathe{-webkit-animation:br 3.4s ease-in-out infinite;animation:br 3.4s ease-in-out infinite}
@@ -58,6 +60,9 @@ background:radial-gradient(circle,rgba(255,255,255,.98) 0,rgba(255,255,255,.75) 
 "use strict";
 (function(){var p=location.pathname;if(location.protocol!=='file:'&&p.charAt(p.length-1)!=='/'&&p.split('/').pop().indexOf('.')<0)location.replace(p+'/'+location.search+location.hash)})();
 var MAXA=170,SPAWN=1,COL='255,255,255';
+/* iPad/iPhone Safari workaround for the reported 2x Web Audio playback. */
+var IOS_WEBKIT=/iPad|iPhone|iPod/.test(navigator.userAgent)||(navigator.platform==='MacIntel'&&navigator.maxTouchPoints>1);
+var PLAY_RATE=IOS_WEBKIT?0.5:1;
 var T=['들숨과 날숨으로 시쓰기','나를 만지는 방법','관절을 꺾어 시를 머금기','바다를 끌어안은 숨','온도와 숨','닿았던 곳을 다시 짚을 때','숨.쉬기.바람','붉은 몸'];
 var AUTH=[["발레리 티 리",374,156],["서현지",118,279],["김소연",56,498],["김 프라나 수연",80,724],["박연경",254,808],["우수빈",384,511],["한희선",530,336],["발레리 티 리",690,224]];
 var HP=[[513, 117], [179, 229], [104, 453], [85, 677], [194, 852], [364, 537], [467, 367], [648, 256]];
@@ -101,8 +106,8 @@ function mark(){tl.forEach(function(e,i){e.className=i==cur?'t on':'t'})}
 var AC=window.AudioContext||window.webkitAudioContext,ctx=null;
 try{ctx=new AC()}catch(e){log('Web Audio 미지원')}
 var buf=null,node=null,startedAt=0,offset=0,playing=false,want=false,token=0,unlocked=false;
-function pos(){return playing?offset+(ctx.currentTime-startedAt):offset}
-function startNode(){if(!buf||playing||!ctx)return;var s=ctx.createBufferSource();s.buffer=buf;s.connect(ctx.destination);
+function pos(){return playing?offset+(ctx.currentTime-startedAt)*PLAY_RATE:offset}
+function startNode(){if(!buf||playing||!ctx)return;var s=ctx.createBufferSource();s.buffer=buf;s.playbackRate.value=PLAY_RATE;s.connect(ctx.destination);
  var o=Math.max(0,Math.min(offset,buf.duration-.05));
  try{if(s.start)s.start(0,o);else s.noteGrainOn(0,o,buf.duration-o)}catch(e){log('재생 오류: '+e);return}
  node=s;offset=o;startedAt=ctx.currentTime;playing=true;setP(true)}
